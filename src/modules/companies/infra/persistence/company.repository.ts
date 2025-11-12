@@ -1,49 +1,52 @@
-import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
-import CompanyMapper from '../mappers/company.mapper';
-import { Company } from '../../domain/entities/company.entity';
-import { CompanyDocument } from './company.schema';
-import { ICompanyRepository } from '../../domain/repositories/company.repo.interface';
 import { Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { Company } from '../../domain/entities/company.entity';
+import { CompanyMapper } from '../mappers/company.mapper';
+import { ICompanyRepository } from '../../domain/repositories/company.repo.interface';
+import { CompanySchema } from './company.schema';
 
 /**
- * Concrete implementation of ICompanyRepository
- * Uses Mongoose to persist data
+ * PostgreSQL implementation of ICompanyRepository using TypeORM
  */
 @Injectable()
 export class CompanyRepository implements ICompanyRepository {
   constructor(
-    @InjectModel(CompanyDocument.name)
-    private readonly companyModel: Model<CompanyDocument>,
+    @InjectRepository(CompanySchema)
+    private readonly repository: Repository<CompanySchema>,
   ) {}
 
   async findAll(): Promise<Company[]> {
-    const documents = await this.companyModel.find().exec();
-    return CompanyMapper.toDomainArray(documents);
+    const entities = await this.repository.find({
+      order: { creationDate: 'DESC' },
+    });
+    return CompanyMapper.toDomainArray(entities);
   }
 
   async findById(id: string): Promise<Company | null> {
-    const document = await this.companyModel.findById(id).exec();
-    return document ? CompanyMapper.toDomain(document) : null;
+    const entity = await this.repository.findOne({ where: { id } });
+    return entity ? CompanyMapper.toDomain(entity) : null;
   }
 
   async create(company: Company): Promise<Company> {
-    const persistence = CompanyMapper.toPersistence(company);
-    const created = new this.companyModel(persistence);
-    const saved = await created.save();
+    const entity = CompanyMapper.toPersistence(company);
+    const saved = await this.repository.save(entity);
     return CompanyMapper.toDomain(saved);
   }
 
-  async update(id: string, company: Partial<Company>): Promise<Company | null> {
-    const updated = await this.companyModel
-      .findByIdAndUpdate(id, company, { new: true })
-      .exec();
+  async update(id: string, updates: Partial<Company>): Promise<Company | null> {
+    const entity = await this.repository.findOne({ where: { id } });
+    if (!entity) {
+      return null;
+    }
 
-    return updated ? CompanyMapper.toDomain(updated) : null;
+    const updated = CompanyMapper.toUpdatePersistence(entity, updates);
+    const saved = await this.repository.save(updated);
+    return CompanyMapper.toDomain(saved);
   }
 
   async delete(id: string): Promise<boolean> {
-    const result = await this.companyModel.findByIdAndDelete(id).exec();
-    return !!result;
+    const result = await this.repository.delete(id);
+    return (result.affected ?? 0) > 0;
   }
 }

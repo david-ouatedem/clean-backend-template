@@ -1,51 +1,61 @@
-import { CompanyDocument, } from '../persistence/company.schema';
 import { Company } from '../../domain/entities/company.entity';
-import { Types } from 'mongoose';
+import { NotFoundException } from '@nestjs/common';
+import { CompanySchema } from '../persistence/company.schema';
 
 /**
- * Mapper converts between Domain Entity and Database Document
- * This keeps domain and infrastructure independent
+ * Mapper converts between Domain Entity and TypeORM Entity
  */
-class CompanyMapper {
+export class CompanyMapper {
   /**
-   * Convert Database Document to Domain Entity
+   * Convert TypeORM Entity to Domain Entity
    */
-  static toDomain(document: CompanyDocument): Company {
-    if (!document) {
-      throw new Error(
-        'Cannot map null or undefined CompanyDocument to domain entity.',
-      );
+  static toDomain(entity: CompanySchema): Company {
+    if (!entity) {
+      throw new NotFoundException('Company not found.');
     }
 
     return new Company(
-      (document._id as Types.ObjectId).toString(),
-      document.companyName,
-      document.email,
-      document.phone,
-      document.address,
-      document.creationDate,
+      entity.id,
+      entity.companyName,
+      entity.email,
+      entity.phone,
+      entity.address,
+      entity.creationDate,
     );
   }
 
   /**
-   * Convert Domain Entity to Database Document
+   * Convert Domain Entity to TypeORM Entity
    */
-  static toPersistence(company: Company): Partial<CompanyDocument> {
-    return {
-      companyName: company.companyName,
-      email: company.email,
-      phone: company.phone,
-      address: company.address,
-      creationDate: company.creationDate,
-    };
+  static toPersistence(company: Company): CompanySchema {
+    const entity = new CompanySchema();
+    entity.companyName = company.companyName;
+    entity.email = company.email;
+    entity.phone = company.phone;
+    entity.address = company.address;
+    entity.creationDate = company.creationDate;
+    return entity;
   }
 
   /**
-   * Convert array of documents to domain entities
+   * Update TypeORM Entity with Domain values
    */
-  static toDomainArray(documents: CompanyDocument[]): Company[] {
-    return documents.map((doc) => this.toDomain(doc));
+  static toUpdatePersistence(
+    entity: CompanySchema,
+    updates: Partial<Company>,
+  ): CompanySchema {
+    if (updates.companyName !== undefined)
+      entity.companyName = updates.companyName;
+    if (updates.email !== undefined) entity.email = updates.email;
+    if (updates.phone !== undefined) entity.phone = updates.phone;
+    if (updates.address !== undefined) entity.address = updates.address;
+    return entity;
+  }
+
+  /**
+   * Convert array of entities to domain
+   */
+  static toDomainArray(entities: CompanySchema[]): Company[] {
+    return entities.map((entity) => this.toDomain(entity));
   }
 }
-
-export default CompanyMapper;

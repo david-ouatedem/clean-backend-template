@@ -1,33 +1,31 @@
-import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document, Types } from 'mongoose';
+import {
+  Entity,
+  Column,
+  PrimaryGeneratedColumn,
+  CreateDateColumn,
+  UpdateDateColumn,
+} from 'typeorm';
 
-/**
- * Mongoose Schema (Database Model)
- * This is the database representation, NOT the domain entity
- */
-@Schema({ collection: 'companies', timestamps: true })
-export class CompanyDocument extends Document {
-  @Prop({ required: true })
+@Entity('companies')
+export class CompanySchema {
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
+
+  @Column({ type: 'varchar', length: 255, name: 'company_name' })
   companyName: string;
 
-  @Prop({ required: true, unique: true })
+  @Column({ type: 'varchar', length: 255, unique: true })
   email: string;
 
-  @Prop({ required: true })
+  @Column({ type: 'varchar', length: 50 })
   phone: string;
 
-  @Prop({ required: true })
+  @Column({ type: 'text' })
   address: string;
 
-  @Prop({ type: Date, default: Date.now })
+  @CreateDateColumn({ name: 'creation_date' })
   creationDate: Date;
+
+  @UpdateDateColumn({ name: 'updated_at' })
+  updatedAt: Date;
 }
-
-export type CompanyDocumentType = CompanyDocument &
-  Document & { _id: Types.ObjectId };
-
-export const CompanySchema = SchemaFactory.createForClass(CompanyDocument);
-
-// Add indexes for better query performance
-CompanySchema.index({ email: 1 });
-CompanySchema.index({ companyName: 1 });
