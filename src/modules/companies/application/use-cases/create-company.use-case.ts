@@ -19,8 +19,8 @@ export class CreateCompanyUseCase {
       throw new BadRequestException('Invalid email format');
     }
 
-    if (dto.phone.length < 10) {
-      throw new BadRequestException('Phone number must be at least 10 digits');
+    if (dto.phone.length < 8) {
+      throw new BadRequestException('Phone number must be at least 8 digits');
     }
 
     if (dto.companyName.length < 2) {
@@ -36,6 +36,7 @@ export class CreateCompanyUseCase {
       dto.email,
       dto.phone,
       dto.address,
+      dto.creationDate,
     );
 
     // Additional domain validation

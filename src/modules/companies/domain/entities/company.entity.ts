@@ -20,7 +20,7 @@ export class Company {
   }
 
   isValidPhone(): boolean {
-    return this.phone.length >= 10;
+    return this.phone.length >= 8;
   }
 
   /**
@@ -32,8 +32,16 @@ export class Company {
     email: string,
     phone: string,
     address: string,
+    creationDate: string,
   ): Company {
-    return new Company(id, companyName, email, phone, address, new Date());
+    return new Company(
+      id,
+      companyName,
+      email,
+      phone,
+      address,
+      new Date(creationDate),
+    );
   }
 
   /**

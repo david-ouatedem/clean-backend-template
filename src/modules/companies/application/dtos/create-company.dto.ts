@@ -18,4 +18,8 @@ export class CreateCompanyDto {
   @IsNotEmpty()
   @IsString()
   address: string;
+
+  @IsNotEmpty()
+  @IsString()
+  creationDate: string;
 }
