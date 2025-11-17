@@ -1,21 +1,27 @@
-FROM node:18-alpine AS development
+# File: Dockerfile
+
+# Change from node:18-alpine to node:20-alpine
+FROM node:20-alpine
+
+# Install pnpm
+RUN corepack enable && corepack prepare pnpm@latest --activate
 
 WORKDIR /app
 
 # Copy package files
-COPY package*.json ./
+COPY package.json pnpm-lock.yaml ./
 
 # Install dependencies
-RUN npm ci
+RUN pnpm install --frozen-lockfile
 
 # Copy source code
 COPY . .
 
-# Build the application
-RUN npm run build
+# Build
+RUN pnpm run build
 
 # Expose port
 EXPOSE 3001
 
-# Start the application
-CMD ["npm", "run", "start:dev"]
+# Start
+CMD ["node", "dist/main.js"]

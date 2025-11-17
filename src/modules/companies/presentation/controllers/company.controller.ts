@@ -1,17 +1,16 @@
 import {
-  Controller,
-  Get,
-  Post,
-  Put,
-  Delete,
   Body,
-  Param,
+  Controller,
+  Delete,
+  Get,
   HttpCode,
   HttpStatus,
+  Param,
+  Post,
+  Put,
 } from '@nestjs/common';
 import { CreateCompanyDto } from '../../application/dtos/create-company.dto';
 import { UpdateCompanyDto } from '../../application/dtos/update-company.dto';
-import { Company } from '../../domain/entities/company.entity';
 import { GetCompaniesUseCase } from '../../application/use-cases/get-companies.use-case';
 import { GetCompanyUseCase } from '../../application/use-cases/get-company.use-case';
 import { CreateCompanyUseCase } from '../../application/use-cases/create-company.use-case';
